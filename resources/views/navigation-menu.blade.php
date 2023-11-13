@@ -19,6 +19,10 @@
                     <x-nav-link href="{{ route('contacts.index') }}" :active="request()->routeIs('contacts.*')">
                         {{ __('Contacts') }}
                     </x-nav-link>
+
+                    <x-nav-link href="{{ route('chat.index') }}" :active="request()->routeIs('chat.*')">
+                        {{ __('Chat') }}
+                    </x-nav-link>
                 </div>
             </div>
 
@@ -160,6 +164,10 @@
 
             <x-responsive-nav-link href="{{ route('contacts.index') }}" :active="request()->routeIs('contacts.*')">
                 {{ __('Contacts') }}
+            </x-responsive-nav-link>
+
+            <x-responsive-nav-link href="{{ route('chat.index') }}" :active="request()->routeIs('chat.*')">
+                {{ __('Chat') }}
             </x-responsive-nav-link>
         </div>
 

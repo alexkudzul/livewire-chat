@@ -1,5 +1,6 @@
 <?php
 
+use App\Livewire\Chat\Chat;
 use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\ContactController;
 
@@ -19,6 +20,8 @@ Route::get('/', function () {
 });
 
 Route::middleware('auth')->resource('contacts', ContactController::class)->except(['show']);
+
+Route::get('/chat', Chat::class)->middleware('auth')->name('chat.index');
 
 Route::middleware([
     'auth:sanctum',
