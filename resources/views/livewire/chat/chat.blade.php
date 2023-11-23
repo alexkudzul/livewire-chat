@@ -65,8 +65,9 @@
 
                     </div>
 
-                    <form class="bg-gray-100 h-16 flex items-center px-4">
-                        <x-input type="text" class="flex-1" placeholder="Escriba un mensaje aquí" />
+                    <form class="bg-gray-100 h-16 flex items-center px-4" wire:submit.prevent="sendMessage">
+                        <x-input wire:model="bodyMessage" type="text" class="flex-1"
+                            placeholder="Escriba un mensaje aquí" />
 
                         <button class="flex-shrink-0 ml-4 text-2xl text-gray-700">
                             <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24"

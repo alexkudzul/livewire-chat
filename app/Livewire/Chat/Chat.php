@@ -2,6 +2,7 @@
 
 namespace App\Livewire\Chat;
 
+use App\Models\Chat as ChatModel;
 use App\Models\Contact;
 use Livewire\Component;
 
@@ -10,6 +11,7 @@ class Chat extends Component
     public $search;
     public $contactChat;
     public $chat;
+    public $bodyMessage;
 
     /**
      * Computed property
@@ -41,6 +43,31 @@ class Chat extends Component
         } else {
             $this->contactChat = $contact;
         }
+    }
+
+    public function sendMessage()
+    {
+        $this->validate([
+            'bodyMessage' => 'required'
+        ]);
+
+        if (!$this->chat) {
+            $this->chat = ChatModel::create();
+
+            // Attach users to chat
+            $this->chat->users()->attach([
+                auth()->id(),
+                $this->contactChat->contact_id
+            ]);
+        }
+
+        // Create message
+        $this->chat->messages()->create([
+            'body' => $this->bodyMessage,
+            'user_id' => auth()->id(),
+        ]);
+
+        $this->reset('bodyMessage', 'contactChat');
     }
 
     public function render()
