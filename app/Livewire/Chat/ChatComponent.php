@@ -14,7 +14,11 @@ class ChatComponent extends Component
     public $bodyMessage;
 
     /**
-     * Computed property
+     * Computed properties
+     */
+
+    /**
+     * Get contacts from user
      */
     public function getContactsProperty()
     {
@@ -29,6 +33,21 @@ class ChatComponent extends Component
             })->get() ?? [];
     }
 
+    /**
+     *  Get messages from chat
+     */
+    public function getMessagesProperty()
+    {
+        return $this->chat ? $this->chat->messages()->get() : [];
+    }
+
+    /**
+     * Methods
+     */
+
+    /**
+     * Open chat with contact
+     */
     public function openChatContact(Contact $contact)
     {
         $chat = auth()->user()->chats()
@@ -40,8 +59,12 @@ class ChatComponent extends Component
 
         if ($chat) {
             $this->chat = $chat;
+
+            $this->reset('contactChat', 'bodyMessage');
         } else {
             $this->contactChat = $contact;
+
+            $this->reset('chat', 'bodyMessage');
         }
     }
 
