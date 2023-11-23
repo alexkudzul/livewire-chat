@@ -8,6 +8,8 @@ use Livewire\Component;
 class Chat extends Component
 {
     public $search;
+    public $contactChat;
+    public $chat;
 
     /**
      * Computed property
@@ -23,6 +25,22 @@ class Chat extends Component
                         });
                 });
             })->get() ?? [];
+    }
+
+    public function openChatContact(Contact $contact)
+    {
+        $chat = auth()->user()->chats()
+            ->whereHas('users', function ($query) use ($contact) {
+                $query->where('user_id', $contact->contact_id);
+            })
+            ->has('users', 2)
+            ->first();
+
+        if ($chat) {
+            $this->chat = $chat;
+        } else {
+            $this->contactChat = $contact;
+        }
     }
 
     public function render()
