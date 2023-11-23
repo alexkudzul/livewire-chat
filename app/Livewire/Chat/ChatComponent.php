@@ -2,11 +2,11 @@
 
 namespace App\Livewire\Chat;
 
-use App\Models\Chat as ChatModel;
+use App\Models\Chat;
 use App\Models\Contact;
 use Livewire\Component;
 
-class Chat extends Component
+class ChatComponent extends Component
 {
     public $search;
     public $contactChat;
@@ -52,7 +52,7 @@ class Chat extends Component
         ]);
 
         if (!$this->chat) {
-            $this->chat = ChatModel::create();
+            $this->chat = Chat::create();
 
             // Attach users to chat
             $this->chat->users()->attach([
@@ -72,6 +72,6 @@ class Chat extends Component
 
     public function render()
     {
-        return view('livewire.chat.chat')->layout('layouts.chat');
+        return view('livewire.chat.chat-component')->layout('layouts.chat');
     }
 }
