@@ -42,6 +42,14 @@ class ChatComponent extends Component
     }
 
     /**
+     * Get chats from user
+     */
+    public function getChatsProperty()
+    {
+        return auth()->user()->chats()->get();
+    }
+
+    /**
      * Methods
      */
 
@@ -60,12 +68,22 @@ class ChatComponent extends Component
         if ($chat) {
             $this->chat = $chat;
 
-            $this->reset('contactChat', 'bodyMessage');
+            $this->reset('contactChat', 'bodyMessage', 'search');
         } else {
             $this->contactChat = $contact;
 
-            $this->reset('chat', 'bodyMessage');
+            $this->reset('chat', 'bodyMessage', 'search');
         }
+    }
+
+    /**
+     * Open chat existing
+     */
+    public function openChatExisting(Chat $chat)
+    {
+        $this->chat = $chat;
+
+        $this->reset('contactChat', 'bodyMessage');
     }
 
     public function sendMessage()

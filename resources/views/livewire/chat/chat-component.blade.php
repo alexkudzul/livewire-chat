@@ -13,32 +13,72 @@
                 </div>
 
                 <div class="h-[calc(100vh-10.5rem)] overflow-auto border-t border-gray-200">
-                    <div class="px-4 py-3">
-                        <h2 class="text-teal-600 text-lg mb-4">Contáctos</h2>
-                        <ul class="space-y-4">
-                            @forelse ($this->contacts as $contact)
-                                <li wire:click="openChatContact({{ $contact }})" class="cursor-pointer">
-                                    <div class="flex">
-                                        <figure class="flex-shrink-0">
-                                            <img class="h-12 w-12 object-cover object-center rounded-full"
-                                                src="{{ $contact->user->profile_photo_url }}"
-                                                alt="{{ $contact->name }}">
-                                        </figure>
+                    @if ($this->chats->count() == 0 || $search)
+                        <div class="px-4 py-3">
+                            <h2 class="text-teal-600 text-lg mb-4">Contáctos</h2>
+                            <ul class="space-y-4">
+                                @forelse ($this->contacts as $contact)
+                                    <li wire:click="openChatContact({{ $contact }})" class="cursor-pointer">
+                                        <div class="flex">
+                                            <figure class="flex-shrink-0">
+                                                <img class="h-12 w-12 object-cover object-center rounded-full"
+                                                    src="{{ $contact->user->profile_photo_url }}"
+                                                    alt="{{ $contact->name }}">
+                                            </figure>
 
-                                        <div class="flex-1 ml-5 border-b border-gray-200">
-                                            <p class="text-gray-800">
-                                                {{ $contact->name }}
+                                            <div class="flex-1 ml-5 border-b border-gray-200">
+                                                <p class="text-gray-800">
+                                                    {{ $contact->name }}
+                                                </p>
+                                                <p class="text-gray-600 text-xs">
+                                                    {{ $contact->user->email }}
+                                                </p>
+                                            </div>
+                                        </div>
+                                    </li>
+                                @empty
+                                @endforelse
+                            </ul>
+                        </div>
+                    @else
+                        @foreach ($this->chats as $chatItem)
+                            <div wire:key="chats-{{ $chatItem->id }}" wire:click="openChatExisting({{ $chatItem }})"
+                                class="flex items-center justify-between {{ $chat && $chat->id == $chatItem->id ? 'bg-gray-200' : 'bg-white' }} hover:bg-gray-100 cursor-pointer px-3">
+                                <figure>
+                                    <img src="{{ $chatItem->image }}"
+                                        class="h-12 w-12 object-cover object-center rounded-full"
+                                        alt="{{ $chatItem->name }}">
+                                </figure>
+
+                                <div class="w-[calc(100%-4rem)] py-4 border-b border-gray-200">
+                                    <div class="flex justify-between items-center">
+                                        <div class="w-[calc(100%-4rem)]">
+                                            <p>
+                                                {{ $chatItem->name }}
                                             </p>
-                                            <p class="text-gray-600 text-xs">
-                                                {{ $contact->user->email }}
+
+                                            <p class="text-sm text-gray-700 mt-1 truncate">
+                                                {{ $chatItem->messages->last()->body }}
                                             </p>
                                         </div>
+
+                                        <div class="text-right">
+                                            <p class="text-xs">
+                                                11:00 AM
+                                            </p>
+
+                                            @if (true)
+                                                <span
+                                                    class="inline-flex items-center justify-center px-2 py-1 mr-2 text-xs font-bold leading-none text-green-100 bg-green-600 rounded-full">
+                                                    10
+                                                </span>
+                                            @endif
+                                        </div>
                                     </div>
-                                </li>
-                            @empty
-                            @endforelse
-                        </ul>
-                    </div>
+                                </div>
+                            </div>
+                        @endforeach
+                    @endif
                 </div>
             </div>
 
@@ -47,8 +87,8 @@
                     <div class="bg-gray-100 h-16 flex items-center px-3">
                         <figure>
                             @if ($chat)
-                                <img class="w-10 h-10 rounded-full object-cover object-center" src="{{ $chat->image }}"
-                                    alt="{{ $chat->name }}">
+                                <img class="w-10 h-10 rounded-full object-cover object-center"
+                                    src="{{ $chat->image }}" alt="{{ $chat->name }}">
                             @else
                                 <img class="w-10 h-10 rounded-full object-cover object-center"
                                     src="{{ $contactChat->user->profile_photo_url }}" alt="{{ $contactChat->name }}">
