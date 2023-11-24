@@ -22,6 +22,9 @@ class Chat extends Model
      * Attributes
      */
 
+    /**
+     * Get name
+     */
     public function name(): Attribute
     {
         return new Attribute(
@@ -38,6 +41,9 @@ class Chat extends Model
         );
     }
 
+    /**
+     * Get image url
+     */
     public function image(): Attribute
     {
         return new Attribute(
@@ -49,6 +55,18 @@ class Chat extends Model
                 $user = $this->users->where('id', '!=', auth()->id())->first();
 
                 return $user->profile_photo_url;
+            }
+        );
+    }
+
+    /**
+     * Get last message
+     */
+    public function lastMessageAt(): Attribute
+    {
+        return new Attribute(
+            get: function () {
+                return $this->messages->last()->created_at;
             }
         );
     }

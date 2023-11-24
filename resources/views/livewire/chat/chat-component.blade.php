@@ -64,7 +64,7 @@
 
                                         <div class="text-right">
                                             <p class="text-xs">
-                                                11:00 AM
+                                                {{ $chatItem->last_message_at->format('h:i A') }}
                                             </p>
 
                                             @if (true)
