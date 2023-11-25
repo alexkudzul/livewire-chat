@@ -15,6 +15,17 @@ class ChatComponent extends Component
     public $chat;
     public $bodyMessage;
 
+    public function getListeners()
+    {
+        $userId = auth()->id();
+
+        // Listen to events with Laravel Echo
+        return [
+            // Listen to notification and render, the channel is built using pusher and laravel echo.
+            "echo-notification:App.Models.User.{$userId},notification" => "render",
+        ];
+    }
+
     /**
      * Computed properties
      */
@@ -24,7 +35,7 @@ class ChatComponent extends Component
      */
     public function getContactsProperty()
     {
-        return Contact::where('user_id', auth()->id())
+        return Contact::where('userId', auth()->id())
             ->when($this->search, function ($query) {
                 $query->where(function ($query) {
                     $query->where('name', 'like', '%' . $this->search . '%')
