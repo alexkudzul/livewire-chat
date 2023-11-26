@@ -4,8 +4,9 @@ namespace App\Livewire\Chat;
 
 use App\Models\Chat;
 use App\Models\Contact;
-use App\Notifications\NewMessage;
 use Livewire\Component;
+use App\Notifications\NewMessage;
+use App\Notifications\UserTyping;
 use Illuminate\Support\Facades\Notification;
 
 class ChatComponent extends Component
@@ -13,6 +14,7 @@ class ChatComponent extends Component
     public $search;
     public $contactChat;
     public $chat;
+    public $chatId;
     public $bodyMessage;
 
     public function getListeners()
@@ -71,6 +73,20 @@ class ChatComponent extends Component
     }
 
     /**
+     * Hooks
+     */
+
+    /**
+     * Updated body message and notify user when typing
+     */
+    public function updatedBodyMessage($value)
+    {
+        if ($value) {
+            Notification::send($this->chat_users_for_notifications, new UserTyping($this->chat->id));
+        }
+    }
+
+    /**
      * Methods
      */
 
@@ -89,6 +105,9 @@ class ChatComponent extends Component
         if ($chat) {
             $this->chat = $chat;
 
+            // For notify user when typing
+            $this->chatId = $chat->id;
+
             $this->reset('contactChat', 'bodyMessage', 'search');
         } else {
             $this->contactChat = $contact;
@@ -104,6 +123,9 @@ class ChatComponent extends Component
     {
         $this->chat = $chat;
 
+        // For notify user when typing
+        $this->chatId = $chat->id;
+
         $this->reset('contactChat', 'bodyMessage');
     }
 
@@ -115,6 +137,9 @@ class ChatComponent extends Component
 
         if (!$this->chat) {
             $this->chat = Chat::create();
+
+            // For notify user when typing
+            $this->chatId = $this->chat->id;
 
             // Attach users to chat
             $this->chat->users()->attach([

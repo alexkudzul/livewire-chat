@@ -1,4 +1,4 @@
-<div>
+<div x-data="data()">
     <div class="bg-gray-50 rounded-lg shadow border border-gray-200 overflow-hidden">
         <div class="grid grid-cols-3 divide-x divide-gray-200">
             <div class="col-span-1">
@@ -103,7 +103,10 @@
                                     {{ $contactChat->name }}
                                 @endif
                             </p>
-                            <p class="text-green-500 text-xs">
+                            <p class="text-gray-600 text-xs" x-show="chatId == typingChatId">
+                                Escribiendo ...
+                            </p>
+                            <p class="text-green-500 text-xs" x-show="chatId != typingChatId">
                                 Online
                             </p>
                         </div>
@@ -131,7 +134,7 @@
                     </div>
 
                     <form class="bg-gray-100 h-16 flex items-center px-4" wire:submit.prevent="sendMessage">
-                        <x-input wire:model="bodyMessage" type="text" class="flex-1"
+                        <x-input wire:model.live="bodyMessage" type="text" class="flex-1"
                             placeholder="Escriba un mensaje aquí" />
 
                         <button class="flex-shrink-0 ml-4 text-2xl text-gray-700">
@@ -163,7 +166,8 @@
                                         <rect x="0.445307" y="0.549558" width="50.5797" height="100.068" rx="7.5"
                                             transform="matrix(0.994522 0.104528 -0.103907 0.994587 10.5547 41.6171)"
                                             fill="#42CBA5" stroke="#316474"></rect>
-                                        <rect x="0.445307" y="0.549558" width="50.4027" height="99.7216" rx="7.5"
+                                        <rect x="0.445307" y="0.549558" width="50.4027" height="99.7216"
+                                            rx="7.5"
                                             transform="matrix(0.994522 0.104528 -0.103907 0.994587 10.9258 37.9564)"
                                             fill="white" stroke="#316474"></rect>
                                         <path
@@ -213,6 +217,28 @@
 
     @push('js')
         <script>
+            function data() {
+                return {
+                    chatId: @entangle('chatId'),
+                    typingChatId: null,
+
+                    init() {
+                        Echo.private('App.Models.User.' + {{ auth()->id() }}).notification((notification) => {
+                            // console.log(notification);
+
+                            // Notify user when typing
+                            if (notification.type == 'App\\Notifications\\UserTyping') {
+                                this.typingChatId = notification.chat_id;
+
+                                setTimeout(() => {
+                                    this.typingChatId = null;
+                                }, 2000);
+                            }
+                        });
+                    }
+                }
+            }
+
             // Nota (Revisar): Bug en livewire V3 no funciona el scrollIntoView.
             // Solo cuando se da 2 veces click a un chat funciona.
             Livewire.on('scrollToEnd', function() {
