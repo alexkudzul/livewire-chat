@@ -35,7 +35,7 @@ class ChatComponent extends Component
      */
     public function getContactsProperty()
     {
-        return Contact::where('userId', auth()->id())
+        return Contact::where('user_id', auth()->id())
             ->when($this->search, function ($query) {
                 $query->where(function ($query) {
                     $query->where('name', 'like', '%' . $this->search . '%')
