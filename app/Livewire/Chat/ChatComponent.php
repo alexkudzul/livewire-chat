@@ -137,6 +137,10 @@ class ChatComponent extends Component
 
     public function render()
     {
+        if ($this->chat) {
+            $this->dispatch('scrollToEnd');
+        }
+
         return view('livewire.chat.chat-component')->layout('layouts.chat');
     }
 }

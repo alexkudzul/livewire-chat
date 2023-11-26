@@ -124,9 +124,10 @@
                                         {{ $message->created_at->format('d-m-y h:i A') }}
                                     </p>
                                 </div>
-
                             </div>
                         @endforeach
+
+                        <span id="scrollDown"></span>
                     </div>
 
                     <form class="bg-gray-100 h-16 flex items-center px-4" wire:submit.prevent="sendMessage">
@@ -209,4 +210,23 @@
             </div>
         </div>
     </div>
+
+    @push('js')
+        <script>
+            // Nota (Revisar): Bug en livewire V3 no funciona el scrollIntoView.
+            // Solo cuando se da 2 veces click a un chat funciona.
+            Livewire.on('scrollToEnd', function() {
+                let scrollDown = document.getElementById('scrollDown');
+                console.log(scrollDown);
+
+                // Si el elemento existe se accede a su propiedad scrollIntoView
+                if (scrollDown) {
+                    scrollDown.scrollIntoView(true);
+                    console.log('scrollToEnd');
+                } else {
+                    console.error("El elemento con el ID 'scrollDown' no se encontró.");
+                }
+            });
+        </script>
+    @endpush
 </div>
