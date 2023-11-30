@@ -16,6 +16,15 @@ class ChatComponent extends Component
     public $chat;
     public $chatId;
     public $bodyMessage;
+    public $users;
+
+    /**
+     * Nota:
+     * - Los canales de presencia se utilizan para rastrear qué usuarios están
+     * actualmente conectados a un canal dado. Estos canales son especialmente
+     * útiles en aplicaciones de chat en tiempo real, donde se necesita conocer
+     * quién está en línea.
+     */
 
     public function getListeners()
     {
@@ -25,7 +34,17 @@ class ChatComponent extends Component
         return [
             // Listen to notification and render, the channel is built using pusher and laravel echo.
             "echo-notification:App.Models.User.{$userId},notification" => "render",
+
+            // Channels presence
+            "echo-presence:chat.1,here" => "hereChat",
+            "echo-presence:chat.1,joining" => "joiningChat",
+            "echo-presence:chat.1,leaving" => "leavingChat",
         ];
+    }
+
+    public function mount()
+    {
+        $this->users = collect();
     }
 
     /**
@@ -69,7 +88,16 @@ class ChatComponent extends Component
      */
     public function getChatUsersForNotificationsProperty()
     {
-        return $this->chat ? $this->chat->users->where('id', '!=', auth()->id()) : [];
+        return $this->chat ? $this->chat->users->where('id', '!=', auth()->id()) : collect();
+    }
+
+    /**
+     * Get active chat
+     */
+    public function getActiveChatProperty()
+    {
+        // Verifica si la lista de usuarios ($this->users) contiene el ID del primer usuario en la lista de usuarios del chat.
+        return $this->users->contains($this->chat_users_for_notifications->first()->id);
     }
 
     /**
@@ -158,6 +186,38 @@ class ChatComponent extends Component
         Notification::send($this->chat_users_for_notifications, new NewMessage());
 
         $this->reset('bodyMessage', 'contactChat');
+    }
+
+    /**
+     * Se llama cuando se inicia el componente o cuando un usuario nuevo se une al canal.
+     * $users Lista de usuarios presentes en el canal en ese momento.
+     */
+    public function hereChat($users)
+    {
+        // Actualiza la propiedad $users con la lista de usuarios presentes en el canal.
+        $this->users = collect($users)->pluck('id');
+    }
+
+    /**
+     * Se llama cuando un usuario se une al canal.
+     * $user Información sobre el usuario que se unió al canal.
+     */
+    public function joiningChat($user)
+    {
+        // Agrega el ID del usuario que se unió a la lista de usuarios presentes en el canal.
+        $this->users->push($user['id']);
+    }
+
+    /**
+     * Se llama cuando un usuario abandona el canal.
+     * $user Información sobre el usuario que abandonó el canal.
+     */
+    public function leavingChat($user)
+    {
+        // Filtra la lista de usuarios para excluir al usuario que abandonó el canal.
+        $this->users = $this->users->filter(function ($id) use ($user) {
+            return $id != $user['id'];
+        });
     }
 
     public function render()
