@@ -71,6 +71,18 @@ class Chat extends Model
         );
     }
 
+    /**
+     * Get unread message number
+     */
+    public function unreadMessages(): Attribute
+    {
+        return new Attribute(
+            get: function () {
+                return $this->messages->where('user_id', '!=', auth()->id())->where('is_read', false)->count();
+            }
+        );
+    }
+
     /*
      * Relationships
      */

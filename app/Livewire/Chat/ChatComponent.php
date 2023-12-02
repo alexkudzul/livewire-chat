@@ -220,9 +220,27 @@ class ChatComponent extends Component
         });
     }
 
+    public function readMessages()
+    {
+        if ($this->chat) {
+            // Marcar mensajes como leídos
+            $isRead = $this->chat->messages()->where('user_id', '!=', auth()->id())->where('is_read', false)->update([
+                'is_read' => true
+            ]);
+
+            if ($isRead) {
+                Notification::send($this->chat_users_for_notifications, new NewMessage());
+            }
+        }
+    }
+
     public function render()
     {
         if ($this->chat) {
+            // Se llama en render para que se ejecute cada vez que se envia un mensaje
+            $this->readMessages();
+
+
             $this->dispatch('scrollToEnd');
         }
 
