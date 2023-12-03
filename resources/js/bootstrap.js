@@ -42,3 +42,17 @@ window.Echo = new Echo({
     forceTLS: false,
     disableStats: true,
 });
+
+/**
+ * Nota:
+ *
+ * Iniciar el servidor Laravel WebSocket
+ * Ejecutar el siguiente comando en una terminal:
+ * php artisan websockets:serve
+ * https://beyondco.de/docs/laravel-websockets/basic-usage/starting
+ *
+ * Panel de depuración
+ * La ubicación predeterminada del panel de WebSocket es: /laravel-websockets
+ * Ejemplo: http://localhost:8000/laravel-websockets
+ * https://beyondco.de/docs/laravel-websockets/debugging/dashboard
+ */
