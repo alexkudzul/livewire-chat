@@ -18,6 +18,19 @@
     <!-- Styles -->
     @stack('css')
     @livewireStyles
+
+    {{-- Variables global para configurar WebSockets dependiente si la app se encuentra en local o producción --}}
+    <script>
+        // Key de Pusher
+        // window.PUSHER_APP_KEY = '{{ config('broadcasting.connections.pusher.key') }}';
+
+        // Si su servidor Laravel WebSocket no utiliza HTTPS, configure forceTLS en false
+        if ({{ config('app.env') == 'local' }}) {
+            window.APP_ENV = false;
+        } else {
+            window.APP_ENV = true;
+        }
+    </script>
 </head>
 
 <body class="font-sans antialiased">
