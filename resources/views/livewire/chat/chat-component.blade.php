@@ -1,4 +1,4 @@
-<div>
+<div x-data="data()">
     <div class="bg-gray-50 rounded-lg shadow border border-gray-200 overflow-hidden">
         <div class="grid grid-cols-3 divide-x divide-gray-200">
             <div class="col-span-1">
@@ -67,10 +67,10 @@
                                                 {{ $chatItem->last_message_at->format('h:i A') }}
                                             </p>
 
-                                            @if (true)
+                                            @if ($chatItem->unread_messages)
                                                 <span
                                                     class="inline-flex items-center justify-center px-2 py-1 mr-2 text-xs font-bold leading-none text-green-100 bg-green-600 rounded-full">
-                                                    10
+                                                    {{ $chatItem->unread_messages }}
                                                 </span>
                                             @endif
                                         </div>
@@ -103,9 +103,19 @@
                                     {{ $contactChat->name }}
                                 @endif
                             </p>
-                            <p class="text-green-500 text-xs">
-                                Online
+                            <p class="text-gray-600 text-xs" x-show="chatId == typingChatId">
+                                Escribiendo ...
                             </p>
+                            @if ($this->active_chat)
+                                <p class="text-green-500 text-xs" x-show="chatId != typingChatId" wire:key="online">
+                                    Online
+                                </p>
+                            @else
+                                <p class="text-red-500 text-xs" x-show="chatId != typingChatId" wire:key="offline">
+                                    Offline
+                                </p>
+                            @endif
+
                         </div>
                     </div>
 
@@ -120,17 +130,36 @@
                                     </p>
 
                                     <p
-                                        class="{{ $message->user_id == auth()->id() ? 'text-right' : '' }} text-xs text-gray-600 mt-1">
+                                        class="inline-flex {{ $message->user_id == auth()->id() ? 'text-right' : '' }} text-xs text-gray-600 mt-1">
                                         {{ $message->created_at->format('d-m-y h:i A') }}
+
+                                        {{-- Check if message is read --}}
+                                        @if ($message->user_id == auth()->id())
+                                            <span class="flex">
+                                                <svg xmlns="http://www.w3.org/2000/svg" fill="none"
+                                                    viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor"
+                                                    class="w-4 h-4 ml-2 {{ $message->is_read ? 'text-blue-500' : 'text-gray-600' }}">
+                                                    <path stroke-linecap="round" stroke-linejoin="round"
+                                                        d="M4.5 12.75l6 6 9-13.5" />
+                                                </svg>
+                                                <svg xmlns="http://www.w3.org/2000/svg" fill="none"
+                                                    viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor"
+                                                    class="w-4 h-4 -ml-3 {{ $message->is_read ? 'text-blue-500' : 'text-gray-600' }}">
+                                                    <path stroke-linecap="round" stroke-linejoin="round"
+                                                        d="M4.5 12.75l6 6 9-13.5" />
+                                                </svg>
+                                            </span>
+                                        @endif
                                     </p>
                                 </div>
-
                             </div>
                         @endforeach
+
+                        <span id="scrollDown"></span>
                     </div>
 
                     <form class="bg-gray-100 h-16 flex items-center px-4" wire:submit.prevent="sendMessage">
-                        <x-input wire:model="bodyMessage" type="text" class="flex-1"
+                        <x-input wire:model.live="bodyMessage" type="text" class="flex-1"
                             placeholder="Escriba un mensaje aquí" />
 
                         <button class="flex-shrink-0 ml-4 text-2xl text-gray-700">
@@ -159,10 +188,12 @@
                                         <path fill-rule="evenodd" clip-rule="evenodd"
                                             d="M105.682 128.716C109.186 128.716 112.026 125.908 112.026 122.446C112.026 118.983 109.186 116.176 105.682 116.176C104.526 116.176 103.442 116.481 102.509 117.015L102.509 116.959C102.509 110.467 97.1831 105.203 90.6129 105.203C85.3224 105.203 80.8385 108.616 79.2925 113.335C78.6052 113.143 77.88 113.041 77.1304 113.041C72.7503 113.041 69.1995 116.55 69.1995 120.878C69.1995 125.207 72.7503 128.716 77.1304 128.716C77.1341 128.716 77.1379 128.716 77.1416 128.716H105.682L105.682 128.716Z"
                                             fill="white"></path>
-                                        <rect x="0.445307" y="0.549558" width="50.5797" height="100.068" rx="7.5"
+                                        <rect x="0.445307" y="0.549558" width="50.5797" height="100.068"
+                                            rx="7.5"
                                             transform="matrix(0.994522 0.104528 -0.103907 0.994587 10.5547 41.6171)"
                                             fill="#42CBA5" stroke="#316474"></rect>
-                                        <rect x="0.445307" y="0.549558" width="50.4027" height="99.7216" rx="7.5"
+                                        <rect x="0.445307" y="0.549558" width="50.4027" height="99.7216"
+                                            rx="7.5"
                                             transform="matrix(0.994522 0.104528 -0.103907 0.994587 10.9258 37.9564)"
                                             fill="white" stroke="#316474"></rect>
                                         <path
@@ -209,4 +240,45 @@
             </div>
         </div>
     </div>
+
+    @push('js')
+        <script>
+            function data() {
+                return {
+                    chatId: @entangle('chatId'),
+                    typingChatId: null,
+
+                    init() {
+                        Echo.private('App.Models.User.' + {{ auth()->id() }}).notification((notification) => {
+                            // console.log(notification);
+
+                            // Notify user when typing
+                            if (notification.type == 'App\\Notifications\\UserTyping') {
+                                this.typingChatId = notification.chat_id;
+
+                                setTimeout(() => {
+                                    this.typingChatId = null;
+                                }, 2000);
+                            }
+                        });
+                    }
+                }
+            }
+
+            // Nota (Revisar): Bug en livewire V3 no funciona el scrollIntoView.
+            // Solo cuando se da 2 veces click a un chat funciona.
+            Livewire.on('scrollToEnd', function() {
+                let scrollDown = document.getElementById('scrollDown');
+                console.log(scrollDown);
+
+                // Si el elemento existe se accede a su propiedad scrollIntoView
+                if (scrollDown) {
+                    scrollDown.scrollIntoView(true);
+                    console.log('scrollToEnd');
+                } else {
+                    console.error("El elemento con el ID 'scrollDown' no se encontró.");
+                }
+            });
+        </script>
+    @endpush
 </div>
